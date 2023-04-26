@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics
-from .models import category, sub_category, sms
-from .serializers import CategorySerializer, SubCategorySerializer, SmsSerializer
+from .models import category, sub_category, sms , lang
+from .serializers import CategorySerializer, SubCategorySerializer, SmsSerializer , LangSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from django.conf import settings
@@ -95,3 +95,74 @@ class SubCategoryDetail(generics.RetrieveAPIView):
         response_data['sms'] = sms_serializer.data
 
         return Response(response_data)
+
+
+class LangList(generics.ListAPIView):
+    queryset = lang.objects.all()
+    serializer_class = LangSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+
+        for lang_data in data:
+            lang_obj = lang.objects.get(language__iexact=lang_data['language'])  # Case-insensitive lookup
+            cats = lang_obj.category_set.all()
+            cat_serializer = CategorySerializer(cats, many=True, context={'request': request})
+            lang_data['categories'] = cat_serializer.data
+
+            # serialize related sub_cat and sms objects for each category object
+            for cat_data in lang_data['categories']:
+                cat_obj = category.objects.get(cat_name__iexact=cat_data['cat_name'], language=lang_obj)
+                sub_cats = cat_obj.sub_category_set.all()
+                sub_cat_serializer = SubCategorySerializer(sub_cats, many=True, context={'request': request})
+                cat_data['sub_categories'] = sub_cat_serializer.data
+                cat_data['cat_image_link'] = request.build_absolute_uri(cat_obj.cat_image_link.url)
+
+                for sub_cat_data in cat_data['sub_categories']:
+                    sub_cat_obj = sub_category.objects.get(sub_cat_name__iexact=sub_cat_data['sub_cat_name'], cat_name=cat_obj)
+                    sms_objs = sms.objects.filter(sub_cat_name=sub_cat_obj)
+                    sms_serializer = SmsSerializer(sms_objs, many=True, context={'request': request})
+                    sub_cat_data['sms'] = sms_serializer.data
+
+        return Response(data)
+from .models import category, sms, lang
+
+
+class LangDetail(generics.RetrieveAPIView):
+    serializer_class = LangSerializer
+
+    def get_object(self):
+        language = self.kwargs['language'].lower()  # Convert to lowercase
+        try:
+            obj = lang.objects.get(language__iexact=language)  # Case-insensitive lookup
+            return obj
+        except lang.DoesNotExist:
+            raise Http404
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        categories = instance.category_set.all()
+        cat_serializer = CategorySerializer(categories, many=True, context={'request': request})
+        response_data = serializer.data
+        response_data['categories'] = cat_serializer.data
+
+        # serialize sub-categories and SMS for each category object
+        for cat_data in response_data['categories']:
+            cat_obj = category.objects.get(cat_name__iexact=cat_data['cat_name'], language=instance)
+            sub_cats = cat_obj.sub_category_set.all()
+            sub_cat_serializer = SubCategorySerializer(sub_cats, many=True, context={'request': request})
+            cat_data['sub_categories'] = sub_cat_serializer.data
+            cat_data['cat_image_link'] = request.build_absolute_uri(cat_obj.cat_image_link.url)
+
+            for sub_cat_data in cat_data['sub_categories']:
+                sub_cat_obj = sub_category.objects.get(sub_cat_name__iexact=sub_cat_data['sub_cat_name'], cat_name=cat_obj)
+                sms_objs = sms.objects.filter(sub_cat_name=sub_cat_obj)
+                sms_serializer = SmsSerializer(sms_objs, many=True, context={'request': request})
+                sub_cat_data['sms'] = sms_serializer.data
+
+        return Response(response_data)
+

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import category, sub_category, sms
+from .models import category, sub_category, sms , lang
 
 
 class SmsSerializer(serializers.ModelSerializer):
@@ -20,7 +20,15 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     sub_categories = SubCategorySerializer(many=True, read_only=True)
-
+    
     class Meta:
         model = category
-        fields = ('cat_name', 'cat_image_link', 'cat_added_date', 'sub_categories')
+        fields = ('cat_name', 'cat_image_link', 'sub_categories')
+class LangSerializer(serializers.ModelSerializer):
+    
+    categories = CategorySerializer(many=True, read_only=True)
+    sub_categories = SubCategorySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = lang
+        fields = ('id', 'language', 'categories','sub_categories')

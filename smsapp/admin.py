@@ -1,8 +1,9 @@
 from django.contrib import admin
-from .models import category, sms, sub_category
+from .models import category, sms, sub_category , lang
 
 admin.site.register(category)
 admin.site.register(sub_category)
+admin.site.register(lang)
 
 class SmsAdmin(admin.ModelAdmin):
     list_display = ('id', 'get_cat_name', 'sub_cat_name','sms')

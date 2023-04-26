@@ -1,7 +1,13 @@
 from django.db import models
 
 # Create your models here.
+class lang(models.Model):
+    language = models.CharField(max_length=50)
+    def __str__(self):
+        return self.language
+
 class category(models.Model):
+    language = models.ForeignKey(lang, on_delete=models.CASCADE)
     cat_name = models.CharField(max_length=50)
     cat_image_link = models.ImageField(blank=True, upload_to='cat_image')
     cat_added_date = models.DateField(auto_now=True)
