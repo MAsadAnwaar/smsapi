@@ -24,21 +24,6 @@
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 {
     "lang": {
         "language": "Language Name"
@@ -78,4 +63,18 @@ for sms
     "sms": {
         "sms": "This is a sample SMS text"
     }
+}
+
+
+update SMS 
+{
+"id": 1,
+"sub_cat_name": "New Subcategory",
+"sms": "This is an updated SMS text"
+}
+
+
+delete sms 
+{
+"id": 1
 }

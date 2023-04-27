@@ -367,3 +367,41 @@ def create_sms(request):
 
     except (lang.DoesNotExist, category.DoesNotExist, sub_category.DoesNotExist):
         return Response("Invalid language, category, or subcategory name", status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_sms(request, sms_id):
+    try:
+        # Get the SMS object and check that it belongs to the current user
+        selected_sms = sms.objects.get(pk=sms_id, user=request.user)
+
+        # Update the SMS text if provided in the request data
+        if 'sms' in request.data:
+            selected_sms.sms = request.data['sms']
+            selected_sms.save()
+
+        # Serialize the updated SMS and return it in the response
+        sms_serializer = SmsSerializer(selected_sms)
+        return Response(sms_serializer.data)
+
+    except sms.DoesNotExist:
+        return Response("Invalid SMS ID", status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_sms(request, sms_id):
+    try:
+        # Get the SMS object and check that it belongs to the current user
+        selected_sms = sms.objects.get(pk=sms_id, user=request.user)
+
+        # Delete the SMS from the database
+        selected_sms.delete()
+
+        # Return a success response
+        return Response("SMS deleted successfully")
+
+    except sms.DoesNotExist:
+        return Response("Invalid SMS ID", status=status.HTTP_400_BAD_REQUEST)

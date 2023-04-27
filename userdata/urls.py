@@ -8,6 +8,8 @@ urlpatterns = [
     path('create_objects/', CreateObjectsView.as_view(), name='create_objects'),
     # SMS Create urls 
     path('create-sms/', create_sms, name='create_sms'),
+    path('update_sms/<int:sms_id>/', update_sms, name='create_sms'),
+    path('delete_sms/<int:sms_id>/',delete_sms, name='delete_sms'),
 
     path('register/', RegisterAPI.as_view(), name='register'),
     path('login/', LoginAPI.as_view(), name='login'),
