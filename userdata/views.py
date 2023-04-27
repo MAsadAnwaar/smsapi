@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from knox.models import AuthToken
-from .serializers import UserSerializer, RegisterSerializer , SMSSerializer
+from .serializers import UserSerializer, RegisterSerializer , SMSSerializer , ComplaintSerializer
 
 # Register API
 class RegisterAPI(generics.GenericAPIView):
@@ -405,3 +405,41 @@ def delete_sms(request, sms_id):
 
     except sms.DoesNotExist:
         return Response("Invalid SMS ID", status=status.HTTP_400_BAD_REQUEST)
+
+
+# complain box 
+from rest_framework import generics, permissions
+from knox.auth import TokenAuthentication
+from .serializers import ComplaintSerializer
+from .models import Complaint, sms
+
+from rest_framework import generics
+from .serializers import ComplaintSerializer
+from .models import Complaint
+
+class ComplaintCreateView(generics.CreateAPIView):
+    serializer_class = ComplaintSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def perform_create(self, serializer):
+        # No need to set the user field here since it's already set in the serializer
+        serializer.save()
+
+
+# class ComplaintViewSet(viewsets.ModelViewSet):
+#     queryset = Complaint.objects.all()
+#     serializer_class = ComplaintSerializer
+
+#     def create(self, request):
+#         serializer = self.get_serializer(data=request.data)
+#         if serializer.is_valid():
+#             sms = SMS.objects.get(id=request.data['sms'])
+#             user = request.user
+#             num_complaints = Complaint.objects.filter(sms=sms, user=user).count()
+#             if num_complaints >= serializer.validated_data['max_complaints']:
+#                 sms.delete()
+#                 return Response({'message': 'Max complaints reached, SMS deleted'}, status=status.HTTP_400_BAD_REQUEST)
+#             serializer.save(user=user)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

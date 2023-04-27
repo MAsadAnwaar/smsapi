@@ -51,7 +51,7 @@ class SmsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = sms
-        fields = ('sub_cat_name', 'sms', 'user_name')
+        fields = ('id','sub_cat_name', 'sms', 'user_name' , 'status')
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
@@ -59,7 +59,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = sub_category
-        fields = ('cat_name', 'sub_cat_name')
+        fields = ('id','cat_name', 'sub_cat_name')
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -67,7 +67,7 @@ class CategorySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = category
-        fields = ('cat_name', 'cat_image_link', 'sub_categories')
+        fields = ('id','cat_name', 'cat_image_link', 'sub_categories')
 class LangSerializer(serializers.ModelSerializer):
     
     categories = CategorySerializer(many=True, read_only=True)
@@ -87,11 +87,12 @@ class SMSSerializer(serializers.ModelSerializer):
     cat_name = serializers.PrimaryKeyRelatedField(queryset=category.objects.all())
     sub_cat_name = serializers.PrimaryKeyRelatedField(queryset=sub_category.objects.all())
     sms = serializers.CharField(max_length=160)
+    sms = serializers.CharField(max_length=10)
     user_name = serializers.CharField(source='user.username', read_only=True)
 
     class Meta:
         model = sms
-        fields = ['language', 'cat_name', 'sub_cat_name', 'sms', 'user_name']
+        fields = ['id','language', 'cat_name', 'sub_cat_name', 'sms', 'user_name', 'status']
 
     # def create(self, validated_data):
     #     language = validated_data['language']
@@ -105,3 +106,41 @@ class SMSSerializer(serializers.ModelSerializer):
     #     new_sms = sms(sub_cat_name=selected_sub_cat, sms=sms_text)
     #     new_sms.save()
     #     return new_sms
+ 
+
+# Complant BOX 
+from .models import *
+from rest_framework import serializers
+from .models import Complaint
+
+from rest_framework import serializers
+from .models import Complaint
+
+class ComplaintSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Complaint
+        fields = ('sms', 'user', 'complaint_text')
+        read_only_fields = ('user',)  # user should be set in view
+
+    def validate(self, attrs):
+        # Check if the user has already made a complaint for this SMS
+        user = self.context['request'].user
+        if Complaint.objects.filter(sms=attrs['sms'], user=user).exists():
+            raise serializers.ValidationError('You have already complained about this SMS.')
+        
+        # Check if the user has reached the complaint limit for this SMS
+        num_complaints = Complaint.objects.filter(sms=attrs['sms'], user=user).count()
+        # max_complaints = attrs['sms'].max_complaints
+        # if num_complaints >= max_complaints:
+        #     raise serializers.ValidationError('You have reached the complaint limit for this SMS.')
+        
+        return attrs
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user'] = user
+        complaint = Complaint.objects.create(**validated_data)
+        return complaint
+
+
+

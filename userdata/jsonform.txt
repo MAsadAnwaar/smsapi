@@ -1,3 +1,5 @@
+create_objects/
+
 {
     "lang": {
         "language": "Arabic"
@@ -24,6 +26,8 @@
 }
 
 
+2nd 
+
 {
     "lang": {
         "language": "Language Name"
@@ -47,7 +51,7 @@
 
 
 
-for sms 
+for sms create-sms/
 
 
 {
@@ -66,7 +70,8 @@ for sms
 }
 
 
-update SMS 
+update SMS update_sms/<int:sms_id>/
+
 {
 "id": 1,
 "sub_cat_name": "New Subcategory",
@@ -74,7 +79,16 @@ update SMS
 }
 
 
-delete sms 
+delete sms delete_sms/<int:sms_id>/
+
 {
 "id": 1
+}
+
+
+For Compaint 
+
+{
+  "sms": 2,
+  "complaint_text": "This message is spam."
 }

@@ -10,7 +10,9 @@ urlpatterns = [
     path('create-sms/', create_sms, name='create_sms'),
     path('update_sms/<int:sms_id>/', update_sms, name='create_sms'),
     path('delete_sms/<int:sms_id>/',delete_sms, name='delete_sms'),
-
+    # Complaint Box 
+    path('complaints/', ComplaintCreateView.as_view(), name='complaint-create'),
+    # Knox Login & Signup 
     path('register/', RegisterAPI.as_view(), name='register'),
     path('login/', LoginAPI.as_view(), name='login'),
     path('logout/', knox_views.LogoutView.as_view(), name='logout'),
