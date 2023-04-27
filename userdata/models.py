@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
 from django.core.mail import send_mail  
+from django.contrib.auth.models import User
 
 
 @receiver(reset_password_token_created)
@@ -51,6 +52,7 @@ class sub_category(models.Model):
 class sms(models.Model):
     sub_cat_name = models.ForeignKey(sub_category, on_delete=models.CASCADE)
     sms = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE) # new field
     def __str__(self):
         return self.sms
 

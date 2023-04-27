@@ -1,0 +1,81 @@
+{
+    "lang": {
+        "language": "Arabic"
+    },
+    "category": [
+        {
+            "language": "Arabic",
+            "cat_name": "input",
+            "cat_image_link": "https://example.com/cat1.png"
+        }
+    ],
+    "sub_category": [
+        {
+            "cat_name": "input",
+            "sub_cat_name": "Subcategory"
+        }
+    ],
+    "sms": [
+        {
+            "sub_cat_name": "Subcategory",
+            "sms": "SMS 1"
+        }
+    ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{
+    "lang": {
+        "language": "Language Name"
+    },
+    "category": {
+        "language": "52",
+        "cat_name": "Category Name",
+        "cat_image_link": "https://example.com/cat1.png"
+        
+    },
+    "sub_category": {
+        "cat_name": "Category Name",
+        "sub_cat_name": "Subcategory Name"
+    },
+    "sms": {
+        "sub_cat_name": "Subcategory Name",
+        "sms": "SMS Message"
+    }
+}
+
+
+
+
+for sms 
+
+
+{
+    "lang": {
+        "language": "English"
+    },
+    "category": {
+        "cat_name": "Quaties"
+    },
+    "sub_category": {
+        "sub_cat_name": "Birthday Wishes"
+    },
+    "sms": {
+        "sms": "This is a sample SMS text"
+    }
+}

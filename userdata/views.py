@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from knox.models import AuthToken
-from .serializers import UserSerializer, RegisterSerializer
+from .serializers import UserSerializer, RegisterSerializer , SMSSerializer
 
 # Register API
 class RegisterAPI(generics.GenericAPIView):
@@ -129,11 +129,15 @@ class CategoryList(generics.ListAPIView):
 
 
 class SmsList(generics.ListAPIView):
+    # authentication_classes = [TokenAuthentication,]
+    # permission_classes = [IsAuthenticated,]
     queryset = sms.objects.all()
     serializer_class = SmsSerializer
 
 
 class CategoryDetail(generics.RetrieveAPIView):
+    # authentication_classes = [TokenAuthentication,]
+    # permission_classes = [IsAuthenticated,]
     serializer_class = CategorySerializer
 
     def get_object(self):
@@ -165,6 +169,8 @@ class CategoryDetail(generics.RetrieveAPIView):
 
 
 class SubCategoryDetail(generics.RetrieveAPIView):
+    # authentication_classes = [TokenAuthentication,]
+    # permission_classes = [IsAuthenticated,]
     serializer_class = SubCategorySerializer
 
     def get_object(self):
@@ -191,6 +197,8 @@ class SubCategoryDetail(generics.RetrieveAPIView):
 
 
 class LangList(generics.ListAPIView):
+    # authentication_classes = [TokenAuthentication,]
+    # permission_classes = [IsAuthenticated,]
     queryset = lang.objects.all()
     serializer_class = LangSerializer
 
@@ -224,6 +232,8 @@ from .models import category, sms, lang
 
 
 class LangDetail(generics.RetrieveAPIView):
+    # authentication_classes = [TokenAuthentication,]
+    # permission_classes = [IsAuthenticated,]
     serializer_class = LangSerializer
 
     def get_object(self):
@@ -259,3 +269,101 @@ class LangDetail(generics.RetrieveAPIView):
 
         return Response(response_data)
 
+
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import LangSerializer, CategorySerializer, SubCategorySerializer, SmsSerializer
+from .models import lang, category, sub_category, sms
+
+
+class CreateObjectsView(APIView):
+    serializer_classes = {
+        'lang': LangSerializer,
+        'category': CategorySerializer,
+        'sub_category': SubCategorySerializer,
+        'sms': SmsSerializer
+    }
+
+    def post(self, request, format=None):
+        # Extract data from the request
+        lang_data = request.data.get('lang', None)
+        category_data = request.data.get('category', None)
+        sub_category_data = request.data.get('sub_category', None)
+        sms_data = request.data.get('sms', None)
+
+        # Create objects
+        if lang_data:
+            lang_serializer = LangSerializer(data=lang_data)
+            if lang_serializer.is_valid():
+                lang_obj = lang_serializer.save()
+            else:
+                return Response(lang_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if category_data:
+            category_data['language'] = lang_obj.id
+            category_serializer = CategorySerializer(data=category_data)
+            if category_serializer.is_valid():
+                category_obj = category_serializer.save()
+            else:
+                return Response(category_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if sub_category_data:
+            sub_category_data['cat_name'] = category_obj.id
+            sub_category_serializer = SubCategorySerializer(data=sub_category_data)
+            if sub_category_serializer.is_valid():
+                sub_category_serializer.save()
+            else:
+                return Response(sub_category_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if sms_data:
+            sms_data['sub_cat_name'] = sub_category_obj.id
+            sms_serializer = SmsSerializer(data=sms_data)
+            if sms_serializer.is_valid():
+                sms_serializer.save()
+            else:
+                return Response(sms_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(status=status.HTTP_201_CREATED)
+
+
+
+
+# SMS Create View
+from knox.auth import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.response import Response
+from rest_framework import status
+from .models import lang, category, sub_category, sms
+from .serializers import SmsSerializer
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def create_sms(request):
+    try:
+        # Get language, category, and subcategory names from the request data
+        language = request.data['lang']['language']
+        cat_name = request.data['category']['cat_name']
+        sub_cat_name = request.data['sub_category']['sub_cat_name']
+        sms_text = request.data['sms']['sms']
+
+        # Get the language, category, and subcategory objects
+        selected_lang = lang.objects.get(language=language)
+        selected_cat = category.objects.get(cat_name=cat_name, language=selected_lang)
+        selected_sub_cat = sub_category.objects.get(sub_cat_name=sub_cat_name, cat_name=selected_cat)
+
+        # Create a new SMS object with the subcategory, SMS text, and current user, and save it to the database
+        new_sms = sms(sub_cat_name=selected_sub_cat, sms=sms_text, user=request.user)
+        new_sms.save()
+
+        # Serialize the new SMS and return it in the response
+        sms_serializer = SmsSerializer(new_sms)
+        return Response(sms_serializer.data, status=status.HTTP_201_CREATED)
+
+    except (lang.DoesNotExist, category.DoesNotExist, sub_category.DoesNotExist):
+        return Response("Invalid language, category, or subcategory name", status=status.HTTP_400_BAD_REQUEST)
