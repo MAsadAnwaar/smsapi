@@ -1,8 +1,23 @@
-from rest_framework import generics, permissions
-from rest_framework.response import Response
 from knox.models import AuthToken
-from .serializers import UserSerializer, RegisterSerializer , SMSSerializer , ComplaintSerializer
-
+from .serializers import *
+from .models import *
+from django.shortcuts import render
+from django.conf import settings
+from django.http import Http404
+from rest_framework import generics, permissions
+from .models import Complaint, sms
+from knox.auth import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.views import APIView
+from django.contrib.auth import login
+from rest_framework import permissions
+from rest_framework.authtoken.serializers import AuthTokenSerializer
+from knox.views import LoginView as KnoxLoginView
+from rest_framework import status
+from rest_framework.response import Response
+from django.contrib.auth.models import User
+from rest_framework.permissions import IsAuthenticated  
 # Register API
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = RegisterSerializer
@@ -17,11 +32,7 @@ class RegisterAPI(generics.GenericAPIView):
         })
 
 
-from django.contrib.auth import login
 
-from rest_framework import permissions
-from rest_framework.authtoken.serializers import AuthTokenSerializer
-from knox.views import LoginView as KnoxLoginView
 
 class LoginAPI(KnoxLoginView):
     permission_classes = (permissions.AllowAny,)
@@ -34,12 +45,7 @@ class LoginAPI(KnoxLoginView):
         return super(LoginAPI, self).post(request, format=None)
 
 
-from rest_framework import status
-from rest_framework import generics
-from rest_framework.response import Response
-from django.contrib.auth.models import User
-from .serializers import ChangePasswordSerializer
-from rest_framework.permissions import IsAuthenticated   
+ 
 
 class ChangePasswordView(generics.UpdateAPIView):
     """
@@ -77,26 +83,6 @@ class ChangePasswordView(generics.UpdateAPIView):
 
 
 
-
-
-
-
-
-
-
-
-
-
-from django.shortcuts import render
-from rest_framework import generics
-from .models import category, sub_category, sms , lang
-from .serializers import CategorySerializer, SubCategorySerializer, SmsSerializer , LangSerializer
-from rest_framework import status
-from rest_framework.response import Response
-from django.conf import settings
-from django.http import Http404
-from knox.auth import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 
 
 class CategoryList(generics.ListAPIView):
@@ -228,7 +214,7 @@ class LangList(generics.ListAPIView):
                     sub_cat_data['sms'] = sms_serializer.data
 
         return Response(data)
-from .models import category, sms, lang
+
 
 
 class LangDetail(generics.RetrieveAPIView):
@@ -273,11 +259,6 @@ class LangDetail(generics.RetrieveAPIView):
 
 
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .serializers import LangSerializer, CategorySerializer, SubCategorySerializer, SmsSerializer
-from .models import lang, category, sub_category, sms
 
 
 class CreateObjectsView(APIView):
@@ -333,13 +314,7 @@ class CreateObjectsView(APIView):
 
 
 # SMS Create View
-from knox.auth import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.response import Response
-from rest_framework import status
-from .models import lang, category, sub_category, sms
-from .serializers import SmsSerializer
+
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
@@ -408,14 +383,7 @@ def delete_sms(request, sms_id):
 
 
 # complain box 
-from rest_framework import generics, permissions
-from knox.auth import TokenAuthentication
-from .serializers import ComplaintSerializer
-from .models import Complaint, sms
 
-from rest_framework import generics
-from .serializers import ComplaintSerializer
-from .models import Complaint
 
 class ComplaintCreateView(generics.CreateAPIView):
     serializer_class = ComplaintSerializer
