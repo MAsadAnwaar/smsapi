@@ -1,0 +1,72 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>Save Quotes</title>
+</head>
+<body>
+    <h2>Save Quotes</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="url">Enter Hamariweb Quotes Web Link Here:</label>
+        <input type="text" name="url" required>
+        <button type="submit">Save</button>
+    </form>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Save Quotes</title>
+</head>
+<body>
+    <h2>Save Quotes</h2>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li {% if message.tags == 'success' %}style="background-color: green; color: white;"{% elif message.tags == 'error' %}style="background-color: red; color: white;"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="url">Quotes Web Link Here:</label>
+        <input type="text" name="url" required>
+
+
+        <label for="website">WebSite:</label>
+        <select name="website" id="website">
+            <option value="hamariweb.com">hamariweb.com</option>
+            <option value="www.brainyquote.com">www.brainyquote.com</option>
+            <option value="www.goodreads.com">www.goodreads.com</option>
+            <option value="www.fluentin3months.com">www.fluentin3months.com</option>
+            <option value="www.goodhousekeeping.com">www.goodhousekeeping.com</option>
+            <option value="www.143greetings.com/">www.143greetings.com/</option>
+            <option value="blog.rescuetime.com">blog.rescuetime.com</option>
+            <!-- <option value="www.fi.edu">www.fi.edu</option> -->
+            <option value="www.berries.com">www.berries.com</option>
+            <option value="www.keepinspiring.me">www.keepinspiring.me</option>
+        </select>
+        <br><br>
+
+        <label for="language">Select Language:</label>
+        <select name="language" id="language">
+            {% for language in languages %}
+            <option value="{{ language.id }}">{{ language.language }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="category">Select Category:</label>
+        <select name="category" id="category">
+            {% for category in categories %}
+            <option value="{{ category.id }}">{{ category.cat_name }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Save</button>
+    </form>
+</body>
+</html>
+
+

@@ -29,6 +29,11 @@ urlpatterns = [
     path('langs/<str:language>/<str:cat_name>/', LangDetail.as_view(), name='lang-detail'),
     path('langs/<str:language>/<str:cat_name>/<str:sub_cat_name>/', LangDetail.as_view(), name='lang-detail'),
 
+
+
+
+    # save Quote Using Scrape MEthod 
+    path('save_quotes/', save_quotes, name='save_quotes'),
 ]
 
 

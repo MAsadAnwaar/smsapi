@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.conf import settings
 from django.http import Http404
 from rest_framework import generics, permissions
-from .models import *
+from .models import Complaint, sms
 from knox.auth import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -18,12 +18,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated  
-from django.contrib import messages
-from rest_framework import generics
-from .serializers import *
-from django.contrib.auth.decorators import login_required
-from bs4 import BeautifulSoup
-import requests
 # Register API
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = RegisterSerializer
@@ -188,12 +182,17 @@ class SubCategoryDetail(generics.RetrieveAPIView):
         return Response(response_data)
 
 
+# from rest_framework.response import Response
+# from rest_framework import generics
+# from .serializers import LangSerializer, CategorySerializer, SubCategorySerializer, SmsSerializer
+# from .models import lang, category, sub_category, sms
 
-
+from rest_framework import generics
+from rest_framework.response import Response
+from .serializers import LangSerializer, CategorySerializer, SubCategorySerializer, SmsSerializer
+from .models import lang, category, sub_category, sms
 
 class LangList(generics.ListAPIView):
-    # authentication_classes = [TokenAuthentication,]
-    # permission_classes = [IsAuthenticated,]
     queryset = lang.objects.all()
     serializer_class = LangSerializer
 
@@ -204,14 +203,13 @@ class LangList(generics.ListAPIView):
 
         for lang_data in data:
             lang_obj = lang.objects.get(language__iexact=lang_data['language'])  # Case-insensitive lookup
-            cats = lang_obj.category_set.all()
+            cats = category.objects.filter(lang=lang_obj)
             cat_serializer = CategorySerializer(cats, many=True, context={'request': request})
             lang_data['categories'] = cat_serializer.data
 
-            # serialize related sub_cat and sms objects for each category object
             for cat_data in lang_data['categories']:
-                cat_obj = category.objects.get(cat_name__iexact=cat_data['cat_name'], language=lang_obj)
-                sub_cats = cat_obj.sub_category_set.all()
+                cat_obj = category.objects.get(cat_name__iexact=cat_data['cat_name'], lang=lang_obj)
+                sub_cats = sub_category.objects.filter(cat_name=cat_obj)
                 sub_cat_serializer = SubCategorySerializer(sub_cats, many=True, context={'request': request})
                 cat_data['sub_categories'] = sub_cat_serializer.data
                 cat_data['cat_image_link'] = request.build_absolute_uri(cat_obj.cat_image_link.url) if cat_obj.cat_image_link else None
@@ -226,98 +224,98 @@ class LangList(generics.ListAPIView):
 
 
 
-class LangDetail(generics.RetrieveAPIView):
-    # authentication_classes = [TokenAuthentication,]
-    # permission_classes = [IsAuthenticated,]
-    serializer_class = LangSerializer
+# class LangDetail(generics.RetrieveAPIView):
+#     # authentication_classes = [TokenAuthentication,]
+#     # permission_classes = [IsAuthenticated,]
+#     serializer_class = LangSerializer
 
-    def get_object(self):
-        language = self.kwargs['language'].lower()  # Convert to lowercase
-        try:
-            obj = lang.objects.get(language__iexact=language)  # Case-insensitive lookup
-            return obj
-        except lang.DoesNotExist:
-            raise Http404
+#     def get_object(self):
+#         language = self.kwargs['language'].lower()  # Convert to lowercase
+#         try:
+#             obj = lang.objects.get(language__iexact=language)  # Case-insensitive lookup
+#             return obj
+#         except lang.DoesNotExist:
+#             raise Http404
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
+#     def retrieve(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         serializer = self.get_serializer(instance)
 
-        categories = instance.category_set.all()
-        cat_serializer = CategorySerializer(categories, many=True, context={'request': request})
-        response_data = serializer.data
-        response_data['categories'] = cat_serializer.data
+#         categories = instance.category_set.all()
+#         cat_serializer = CategorySerializer(categories, many=True, context={'request': request})
+#         response_data = serializer.data
+#         response_data['categories'] = cat_serializer.data
 
-        # serialize sub-categories and SMS for each category object
-        for cat_data in response_data['categories']:
-            cat_obj = category.objects.get(cat_name__iexact=cat_data['cat_name'], language=instance)
-            sub_cats = cat_obj.sub_category_set.all()
-            sub_cat_serializer = SubCategorySerializer(sub_cats, many=True, context={'request': request})
-            cat_data['sub_categories'] = sub_cat_serializer.data
-            cat_data['cat_image_link'] = request.build_absolute_uri(cat_obj.cat_image_link.url)
+#         # serialize sub-categories and SMS for each category object
+#         for cat_data in response_data['categories']:
+#             cat_obj = category.objects.get(cat_name__iexact=cat_data['cat_name'], language=instance)
+#             sub_cats = cat_obj.sub_category_set.all()
+#             sub_cat_serializer = SubCategorySerializer(sub_cats, many=True, context={'request': request})
+#             cat_data['sub_categories'] = sub_cat_serializer.data
+#             cat_data['cat_image_link'] = request.build_absolute_uri(cat_obj.cat_image_link.url)
 
-            for sub_cat_data in cat_data['sub_categories']:
-                sub_cat_obj = sub_category.objects.get(sub_cat_name__iexact=sub_cat_data['sub_cat_name'], cat_name=cat_obj)
-                sms_objs = sms.objects.filter(sub_cat_name=sub_cat_obj)
-                sms_serializer = SmsSerializer(sms_objs, many=True, context={'request': request})
-                sub_cat_data['sms'] = sms_serializer.data
+#             for sub_cat_data in cat_data['sub_categories']:
+#                 sub_cat_obj = sub_category.objects.get(sub_cat_name__iexact=sub_cat_data['sub_cat_name'], cat_name=cat_obj)
+#                 sms_objs = sms.objects.filter(sub_cat_name=sub_cat_obj)
+#                 sms_serializer = SmsSerializer(sms_objs, many=True, context={'request': request})
+#                 sub_cat_data['sms'] = sms_serializer.data
 
-        return Response(response_data)
-
-
+#         return Response(response_data)
 
 
 
 
 
-class CreateObjectsView(APIView):
-    serializer_classes = {
-        'lang': LangSerializer,
-        'category': CategorySerializer,
-        'sub_category': SubCategorySerializer,
-        'sms': SmsSerializer
-    }
 
-    def post(self, request, format=None):
-        # Extract data from the request
-        lang_data = request.data.get('lang', None)
-        category_data = request.data.get('category', None)
-        sub_category_data = request.data.get('sub_category', None)
-        sms_data = request.data.get('sms', None)
 
-        # Create objects
-        if lang_data:
-            lang_serializer = LangSerializer(data=lang_data)
-            if lang_serializer.is_valid():
-                lang_obj = lang_serializer.save()
-            else:
-                return Response(lang_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class CreateObjectsView(APIView):
+#     serializer_classes = {
+#         'lang': LangSerializer,
+#         'category': CategorySerializer,
+#         'sub_category': SubCategorySerializer,
+#         'sms': SmsSerializer
+#     }
 
-        if category_data:
-            category_data['language'] = lang_obj.id
-            category_serializer = CategorySerializer(data=category_data)
-            if category_serializer.is_valid():
-                category_obj = category_serializer.save()
-            else:
-                return Response(category_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     def post(self, request, format=None):
+#         # Extract data from the request
+#         lang_data = request.data.get('lang', None)
+#         category_data = request.data.get('category', None)
+#         sub_category_data = request.data.get('sub_category', None)
+#         sms_data = request.data.get('sms', None)
 
-        if sub_category_data:
-            sub_category_data['cat_name'] = category_obj.id
-            sub_category_serializer = SubCategorySerializer(data=sub_category_data)
-            if sub_category_serializer.is_valid():
-                sub_category_serializer.save()
-            else:
-                return Response(sub_category_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         # Create objects
+#         if lang_data:
+#             lang_serializer = LangSerializer(data=lang_data)
+#             if lang_serializer.is_valid():
+#                 lang_obj = lang_serializer.save()
+#             else:
+#                 return Response(lang_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        if sms_data:
-            sms_data['sub_cat_name'] = sub_category_obj.id
-            sms_serializer = SmsSerializer(data=sms_data)
-            if sms_serializer.is_valid():
-                sms_serializer.save()
-            else:
-                return Response(sms_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         if category_data:
+#             category_data['language'] = lang_obj.id
+#             category_serializer = CategorySerializer(data=category_data)
+#             if category_serializer.is_valid():
+#                 category_obj = category_serializer.save()
+#             else:
+#                 return Response(category_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(status=status.HTTP_201_CREATED)
+#         if sub_category_data:
+#             sub_category_data['cat_name'] = category_obj.id
+#             sub_category_serializer = SubCategorySerializer(data=sub_category_data)
+#             if sub_category_serializer.is_valid():
+#                 sub_category_serializer.save()
+#             else:
+#                 return Response(sub_category_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#         if sms_data:
+#             sms_data['sub_cat_name'] = sub_category_obj.id
+#             sms_serializer = SmsSerializer(data=sms_data)
+#             if sms_serializer.is_valid():
+#                 sms_serializer.save()
+#             else:
+#                 return Response(sms_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#         return Response(status=status.HTTP_201_CREATED)
 
 
 
@@ -443,7 +441,14 @@ class ComplaintCreateView(generics.CreateAPIView):
 
 
 
+from .models import category, lang, sub_category, sms
 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from .models import lang, category, sub_category, sms
+from bs4 import BeautifulSoup
+import requests
 
 # @login_required
 # def save_quotes(request):
@@ -484,7 +489,6 @@ def save_quotes(request):
 
     if request.method == 'POST':
         url = request.POST.get('url')  # Assuming you have a form input with name 'url'
-        website = request.POST.get('website')
         headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
         r = requests.get(url, headers=headers)
         soup = BeautifulSoup(r.content, "html.parser")
@@ -495,58 +499,59 @@ def save_quotes(request):
 
         selected_lang = lang.objects.get(pk=selected_lang_id)  # Get the selected language object
         selected_cat = category.objects.get(pk=selected_cat_id)  # Get the selected category object
-        if website == "hamariweb.com":
-            # for https://hamariweb.com/mobiles/good_morning_sms_messages20/ datascrape
 
-            quotes = soup.find_all(class_= "quote_text")  
+        quotes = soup.find_all(class_="quote_text")
 
-        elif website == "www.brainyquote.com":
-            # for https://www.brainyquote.com/topics/life-quotes qoutes scrape
-
-            quotes = soup.find_all(class_= "grid-item qb clearfix bqQt")
-        elif website == "www.goodreads.com":
-            # for https://www.goodreads.com/quotes quotes scrape
-
-            quotes = soup.find_all(class_= "quoteText")
-        elif website == "www.fluentin3months.com":
-            # for https://www.fluentin3months.com/chinese-proverbs/ quotes scrape
-
-            quotes = soup.find_all(class_= "wp-block-heading")
-        elif website == "www.goodhousekeeping.com":
-           # for https://www.goodhousekeeping.com/life/g5080/life-quotes/ quotes scrape
-            quotes = soup.find_all(class_= "css-18vfmjb et3p2gv0")
-
-        elif website == "www.143greetings.com":
-        #     # for https://www.143greetings.com/goodluck/messages.html?utm_content=expand_article quotes scrape
-            quotes = soup.find_all(class_= "message") 
-
-        elif website == "blog.rescuetime.com":
-            # for https://blog.rescuetime.com/time-management-quotes/ quotes scrape
-            quotes = soup.find_all(class_ = "wp-block-quote")
-        # elif website == "www.fi.edu":
-        #     # for https://www.fi.edu/en/benjamin-franklin/famous-quotes quotes scrape
-        #     quotes = soup.find_all(dir="ltr")
-        elif website == "www.berries.com":
-            
-            # for https://www.berries.com/blog/positive-quotes quotes scrape
-            quotes = soup.find_all(class_="has-text-align-center filter-box-quote")
-        elif website == "www.keepinspiring.me":
-            # for https://www.keepinspiring.me/famous-quotes/ quotes scrape
-            quotes = soup.find_all(class_="wp-block-quote is-style-large")
         for quote in quotes:
             quote_text = quote.get_text().replace('\n', '')
             if quote_text:
-                sub_cat, created = sub_category.objects.get_or_create(cat_name=selected_cat, sub_cat_name=title)
+                sub_cat, created = sub_category.objects.get_or_create(cat_name=selected_cat, language=selected_lang, sub_cat_name=title)
                 # Check if an SMS with the same content already exists
                 existing_sms = sms.objects.filter(sub_cat_name=sub_cat, sms=quote_text).exists()
                 if not existing_sms:
                     sms.objects.create(sub_cat_name=sub_cat, sms=quote_text, user=request.user)
-        messages.success(request, 'SMS Update Successfully')
-        # return render(request, 'success.html')  # Assuming you have a template called 'success.html'
+
+        return render(request, 'success.html')  # Assuming you have a template called 'success.html'
 
     context = {
         'languages': languages,
         'categories': categories
     }
     return render(request, 'save_quotes.html', context)  # Assuming you have a template called 'save_quotes.html'
+
+# def save_quotes(request):
+#     languages = lang.objects.all()  # Get all available languages
+#     categories = category.objects.all()  # Get all available categories
+
+#     if request.method == 'POST':
+#         url = request.POST.get('url')  # Assuming you have a form input with name 'url'
+#         headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+#         r = requests.get(url, headers=headers)
+#         soup = BeautifulSoup(r.content, "html.parser")
+#         title = soup.find('h1').get_text()
+
+#         selected_lang_id = request.POST.get('language')  # Get selected language ID from the form
+#         selected_cat_id = request.POST.get('category')  # Get selected category ID from the form
+
+#         selected_lang = lang.objects.get(pk=selected_lang_id)  # Get the selected language object
+#         selected_cat = category.objects.get(pk=selected_cat_id)  # Get the selected category object
+
+#         quotes = soup.find_all(class_="quote_text")
+
+#         for quote in quotes:
+#             quote_text = quote.get_text().replace('\n', '')
+#             if quote_text:
+#                 sub_cat, created = sub_category.objects.get_or_create(cat_name=selected_cat, sub_cat_name=title)
+#                 # Check if an SMS with the same content already exists
+#                 existing_sms = sms.objects.filter(sub_cat_name=sub_cat, sms=quote_text).exists()
+#                 if not existing_sms:
+#                     sms.objects.create(sub_cat_name=sub_cat, sms=quote_text, user=request.user)
+
+#         return render(request, 'success.html')  # Assuming you have a template called 'success.html'
+
+#     context = {
+#         'languages': languages,
+#         'categories': categories
+#     }
+#     return render(request, 'save_quotes.html', context)  # Assuming you have a template called 'save_quotes.html'
 
