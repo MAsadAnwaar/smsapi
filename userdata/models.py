@@ -1,11 +1,12 @@
 from django.db import models
-
-# Create your models here.
 from django.dispatch import receiver
 from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
 from django.core.mail import send_mail  
 from django.contrib.auth.models import User
+
+# Create your models here.
+
 
 
 @receiver(reset_password_token_created)
@@ -24,11 +25,6 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
         [reset_password_token.user.email]
     )
 
-
-
-from django.db import models
-
-# Create your models here.
 class lang(models.Model):
     language = models.CharField(max_length=50)
     def __str__(self):
@@ -54,28 +50,11 @@ class sms(models.Model):
     sms = models.TextField()
     status = models.BooleanField(default=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE) # new field
+    likes = models.ManyToManyField(User, related_name='liked_sms', blank=True)
+    dislikes = models.ManyToManyField(User, related_name='disliked_sms', blank=True)
     def __str__(self):
         return self.sms
 
-# class Complaint(models.Model):
-#     sms = models.ForeignKey(sms, on_delete=models.CASCADE)
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     complaint_text = models.TextField()
-#     num_complaints = models.PositiveIntegerField(default=0)
-#     max_complaints = models.PositiveIntegerField(default=5)
-
-#     def __str__(self):
-#         return self.complaint_text
-
-#     def save(self, *args, **kwargs):
-#         if self.num_complaints >= self.max_complaints:
-#             self.sms.status = False
-#             self.sms.save()
-#         else:
-#             # increment the num_complaints field by the number of complaints
-#             # already made by the current user for the same SMS plus 1
-#             self.num_complaints = Complaint.objects.filter(sms=self.sms, user=self.user).count() + 1
-#             super(Complaint, self).save(*args, **kwargs)
 class Complaint(models.Model):
     sms = models.ForeignKey(sms, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)

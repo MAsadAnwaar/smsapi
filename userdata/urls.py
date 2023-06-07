@@ -4,6 +4,8 @@ from knox import views as knox_views
 from .views import LoginAPI
 from django.urls import path , include
 from . views import *
+from . import views
+
 urlpatterns = [
     path('create_objects/', CreateObjectsView.as_view(), name='create_objects'),
     # SMS Create urls 
@@ -34,6 +36,11 @@ urlpatterns = [
 
     # save Quote Using Scrape MEthod 
     path('save_quotes/', save_quotes, name='save_quotes'),
+
+
+    # Like and Dislike SMS 
+    path('like-sms/<int:sms_id>/', views.like_sms, name='like-sms'),
+    path('dislike-sms/<int:sms_id>/', views.dislike_sms, name='dislike-sms'),
 ]
 
 

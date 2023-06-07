@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from .models import *
 
 # User Serializer
 class UserSerializer(serializers.ModelSerializer):
@@ -37,23 +38,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 
 
-from rest_framework import serializers
-from .models import category, sub_category, sms , lang
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ('username',)
 
-class SMSSerializer(serializers.ModelSerializer):
-    language = serializers.PrimaryKeyRelatedField(queryset=lang.objects.all())
-    cat_name = serializers.PrimaryKeyRelatedField(queryset=category.objects.all())
-    sub_cat_name = serializers.PrimaryKeyRelatedField(queryset=sub_category.objects.all())
-    sms = serializers.CharField(max_length=160)
-    user_name = serializers.CharField(source='user.username', read_only=True)
-
-    class Meta:
-        model = sms
-        fields = ['id', 'language', 'cat_name', 'sub_cat_name', 'sms', 'user_name', 'status']
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
@@ -61,7 +46,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = sub_category
-        fields = ('id', 'cat_name', 'sub_cat_name')
+        fields = ( 'cat_name', 'sub_cat_name')
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -69,7 +54,7 @@ class CategorySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = category
-        fields = ('id', 'cat_name', 'cat_image_link', 'sub_categories')
+        fields = ( 'cat_name', 'cat_image_link', 'sub_categories')
 
 
 class LangSerializer(serializers.ModelSerializer):
@@ -81,19 +66,33 @@ class LangSerializer(serializers.ModelSerializer):
         fields = ('id', 'language', 'categories', 'sub_categories')
 
 
+# class SmsSerializer(serializers.ModelSerializer):
+#     # sub_cat_name = SubCategorySerializer(read_only=True)
+#     user_name = serializers.CharField(source='user.username', read_only=True)
+
+#     class Meta:
+#         model = sms
+#         fields = ('id', 'sms', 'user_name', 'status')
+#     # sub_cat_name = SubCategorySerializer(read_only=True)
+#     # user_name = serializers.CharField(source='user.username', read_only=True)
+
+#     # class Meta:
+#     #     model = sms
+#     #     fields = ('id', 'sub_cat_name', 'sms', 'user_name', 'status')
 class SmsSerializer(serializers.ModelSerializer):
-    # sub_cat_name = SubCategorySerializer(read_only=True)
     user_name = serializers.CharField(source='user.username', read_only=True)
+    like_count = serializers.SerializerMethodField()
+    dislike_count = serializers.SerializerMethodField()
 
     class Meta:
         model = sms
-        fields = ('id', 'sms', 'user_name', 'status')
-    # sub_cat_name = SubCategorySerializer(read_only=True)
-    # user_name = serializers.CharField(source='user.username', read_only=True)
+        fields = ('id', 'sms', 'user_name', 'status', 'like_count', 'dislike_count')
 
-    # class Meta:
-    #     model = sms
-    #     fields = ('id', 'sub_cat_name', 'sms', 'user_name', 'status')
+    def get_like_count(self, obj):
+        return obj.likes.count()
+
+    def get_dislike_count(self, obj):
+        return obj.dislikes.count()
 
    
  
@@ -101,7 +100,7 @@ class SmsSerializer(serializers.ModelSerializer):
 # Complant BOX 
 from .models import *
 from rest_framework import serializers
-from .models import Complaint
+
 
 from rest_framework import serializers
 from .models import Complaint

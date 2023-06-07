@@ -87,6 +87,35 @@ class ChangePasswordView(generics.UpdateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['POST'])
+def like_sms(request, sms_id):
+    sms_obj = sms.objects.get(pk=sms_id)
+    user = request.user
+
+    if user in sms_obj.likes.all():
+        sms_obj.likes.remove(user)
+    else:
+        sms_obj.likes.add(user)
+        sms_obj.dislikes.remove(user)
+
+    return Response({'detail': 'Action performed successfully.'})
+
+
+@api_view(['POST'])
+def dislike_sms(request, sms_id):
+    sms_obj = sms.objects.get(pk=sms_id)
+    user = request.user
+
+    if user in sms_obj.dislikes.all():
+        sms_obj.dislikes.remove(user)
+    else:
+        sms_obj.dislikes.add(user)
+        sms_obj.likes.remove(user)
+
+    return Response({'detail': 'Action performed successfully.'})
 
 
 
