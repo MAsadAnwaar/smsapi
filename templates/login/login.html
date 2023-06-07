@@ -1,0 +1,104 @@
+{% load static %}
+<!doctype html>
+<html class="no-js " lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<meta name="description" content="Fun Prime">
+<link rel="icon" href="{% static 'A111.png' %}" >
+<link rel="shortcut icon" href="{% static 'A111.png' %}" >
+
+<title>FunPrime API Management System</title>
+<!-- Favicon-->
+<link rel="icon" href="{% static 'A111.png' %}" >
+<!-- Custom Css -->
+<link rel="stylesheet" href="{% static 'assets/plugins/bootstrap/css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/style.min.css' %}">
+<style>
+#alert-message{margin:0 5px 0 30px;color:#fff}
+#alert-message a{color:#fff}
+#success-message{background-color:#28803D;margin:0 5px 0 30px}
+.messagebox{background-color:#d03e3e;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit}
+.error-message{background-color:#d03e3e}
+.success-message{background-color:#28803D}
+</style>
+</head>
+
+<body class="theme-blush">
+
+<div class="authentication">
+    <div class="container">
+        <div class="row">
+	    <div class="col-lg-4 col-sm-0">
+	     </div>
+            <div class="col-lg-4 col-sm-12">
+                <form class="card auth_form"  action =  "" id="login_form" method="post">
+                    {% csrf_token %}
+                    <div class="header">
+               <div class="card">
+       
+      
+                   <img src="{% static 'A111.png' %}" alt="Sign In"/>
+               </div>
+               
+                    </div>
+                    <div class="body">
+                        <div class="input-group mb-3">
+							<input type="text" class="form-control" id="inputEmail" name="username" placeholder="Username">
+                            <div class="input-group-append">
+                                <span class="input-group-text"><i class="zmdi zmdi-account-circle"></i></span>
+                            </div>
+                        </div>
+                        <div class="input-group mb-3">
+                            <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Password">
+                            <div class="input-group-append">
+                                <span class="input-group-text"><a href="#" class="forgot" title="Forgot Password"><i class="zmdi zmdi-lock"></i></a></span>
+                            </div>
+                        </div>
+
+						<button id="signin" type="submit" value="Login" class="btn btn-primary btn-block waves-effect waves-light" data-loading-text="Loading...">Login</button>
+						<div class="messagebox">
+                            {% if messages %}
+                                <ul class="messages">
+                                    {% for message in messages %}
+                                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+							<div id="alert-message"></div>
+
+                    </div>
+
+                </form>
+
+
+                </div>
+            </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Jquery Core Js -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+<script src="{% static 'assets/bundles/libscripts.bundle.js' %}"></script>
+<script src="{% static 'assets/bundles/vendorscripts.bundle.js' %}"></script> <!-- Lib Scripts Plugin Js -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
+
+<script type="text/javascript" src="{% static 'js/jquery.validate.js' %}"></script>
+<script type = "{% static 'text/javascript' %}" >
+    (function () {
+        var po = document.createElement('script');
+        po.type = 'text/javascript';
+        po.async = true;
+        po.src = 'https://apis.google.com/js/client:plusone.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(po, s);
+    })();
+</script>
+
+
+</body>
+</html>

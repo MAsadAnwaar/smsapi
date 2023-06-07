@@ -360,7 +360,9 @@ class CreateObjectsView(APIView):
 def create_sms(request):
     try:
         # Get language, category, and subcategory names from the request data
-        language = request.data['lang']['language']
+        # language = request.data['lang']['language']
+        # Defult use
+        language = 'English'      
         cat_name = request.data['category']['cat_name']
         sub_cat_name = request.data['sub_category']['sub_cat_name']
         sms_text = request.data['sms']['sms']
@@ -505,8 +507,8 @@ class ComplaintCreateView(generics.CreateAPIView):
 
 
 from .models import lang, category, sub_category, sms
-
-@login_required
+@login_required(login_url='Login')
+# @login_required
 def save_quotes(request):
     languages = lang.objects.all()  # Get all available languages
     categories = category.objects.all()  # Get all available categories
@@ -579,3 +581,37 @@ def save_quotes(request):
     }
     return render(request, 'save_quotes.html', context)  # Assuming you have a template called 'save_quotes.html'
 
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('save_quotes')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            # messages.success(request, 'Login Successful')
+            return redirect('save_quotes')  # Replace 'home' with the desired URL name for the home page
+        else:
+            # messages.error(request, f'Error creating theme: {str(e)}')
+            messages.error(request, 'Invalid username or password.')
+
+    return render(request, 'login/login.html')
+
+
+
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('Login')

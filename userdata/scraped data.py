@@ -19,7 +19,7 @@ quotestitle=Title.get_text()
 
 # for https://hamariweb.com/mobiles/good_morning_sms_messages20/ datascrape
 
-# quotes = soup.find_all(class_= "quote_text")    
+quotes = soup.find_all(class_= "quote_text")    
 
 # for https://www.brainyquote.com/topics/life-quotes qoutes scrape
 

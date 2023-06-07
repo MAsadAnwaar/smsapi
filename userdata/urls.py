@@ -41,6 +41,12 @@ urlpatterns = [
     # Like and Dislike SMS 
     path('like-sms/<int:sms_id>/', views.like_sms, name='like-sms'),
     path('dislike-sms/<int:sms_id>/', views.dislike_sms, name='dislike-sms'),
+
+
+    # Login and Logout 
+
+    path('Login/', views.login_view, name='Login'),
+    path('logout/', views.logout_view, name='logout'),
 ]
 
 
