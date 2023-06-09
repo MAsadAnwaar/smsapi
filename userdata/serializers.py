@@ -80,13 +80,15 @@ class LangSerializer(serializers.ModelSerializer):
 #     #     model = sms
 #     #     fields = ('id', 'sub_cat_name', 'sms', 'user_name', 'status')
 class SmsSerializer(serializers.ModelSerializer):
+    sub_cat_name = serializers.CharField(source='sub_cat_name.sub_cat_name', read_only=True)
+    cat_name = serializers.CharField(source='sub_cat_name.cat_name.cat_name', read_only=True)
     user_name = serializers.CharField(source='user.username', read_only=True)
     like_count = serializers.SerializerMethodField()
     dislike_count = serializers.SerializerMethodField()
 
     class Meta:
         model = sms
-        fields = ('id', 'sms', 'user_name', 'status', 'like_count', 'dislike_count')
+        fields = ('id', 'cat_name', 'sub_cat_name', 'sms', 'user_name', 'status', 'like_count', 'dislike_count')
 
     def get_like_count(self, obj):
         return obj.likes.count()

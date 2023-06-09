@@ -50,24 +50,6 @@ create_objects/
 
 
 
-for sms create-sms/ in this we use defult English LAanguage in the code
-
-
-{
-    "lang": {
-        "language": "English"
-    },
-    "category": {
-        "cat_name": "Quaties"
-    },
-    "sub_category": {
-        "sub_cat_name": "Birthday Wishes"
-    },
-    "sms": {
-        "sms": "This is a sample SMS text"
-    }
-}
-
 
 for sms create-sms/
 
@@ -87,6 +69,19 @@ for sms create-sms/
     }
 }
 
+for defult English Language  
+{
+    
+    "category": {
+        "cat_name": "Quaties"
+    },
+    "sub_category": {
+        "sub_cat_name": "Birthday Wishes"
+    },
+    "sms": {
+        "sms": "This is a sample SMS text"
+    }
+}
 
 update SMS update_sms/<int:sms_id>/
 
