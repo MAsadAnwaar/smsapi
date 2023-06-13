@@ -47,5 +47,21 @@ urlpatterns = [
 
     path('Login/', views.login_view, name='Login'),
     path('logout/', views.logout_view, name='logout'),
+
+
+
+
+    # Search MEthod 
+    path('search/', SubCategorySearchView.as_view(), name='sub_category_search'),
+
+
+
+    # Notifications 
+    path('notifications/', NotificationsCreateView.as_view(), name='notifications-create'),
+    path('notifications/user/', UserNotificationsListView.as_view(), name='notifications-user-list'),
+    path('notifications/<int:pk>/', NotificationsRetrieveUpdateView.as_view(), name='notifications-retrieve-update'),
+    path('notifications/<int:pk>/delete/', NotificationsRetrieveUpdateView.as_view(), name='notifications-delete'),
+    path('send-notification/', SendNotificationView.as_view(), name='send_notification'),
+
 ]
 

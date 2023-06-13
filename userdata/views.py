@@ -5,7 +5,6 @@ from django.shortcuts import render
 from django.conf import settings
 from django.http import Http404
 from rest_framework import generics, permissions
-from .models import *
 from knox.auth import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -16,11 +15,8 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from knox.views import LoginView as KnoxLoginView
 from rest_framework import status
 from rest_framework.response import Response
-from django.contrib.auth.models import User
-from rest_framework.permissions import IsAuthenticated  
+from django.contrib.auth.models import User 
 from django.contrib import messages
-from rest_framework import generics
-from .serializers import *
 from django.contrib.auth.decorators import login_required
 from bs4 import BeautifulSoup
 import requests
@@ -88,7 +84,6 @@ class ChangePasswordView(generics.UpdateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
 
 @api_view(['POST'])
 def like_sms(request, sms_id):
@@ -572,6 +567,42 @@ def save_quotes(request):
                 existing_sms = sms.objects.filter(sub_cat_name=sub_cat, sms=quote_text).exists()
                 if not existing_sms:
                     sms.objects.create(sub_cat_name=sub_cat, sms=quote_text, user=request.user)
+
+        # keyword = request.data.get('keyword')
+        # message = request.data.get('message')
+        keyword = (title)
+        message = (title)
+
+        if not keyword or not message:
+            return Response("Please provide a keyword and a message", status=status.HTTP_400_BAD_REQUEST)
+
+        # Find all users who have searched for the given keyword
+        users = search.objects.filter(keywords=keyword).values_list('user', flat=True)
+
+        # # Check if the keyword already exists
+        # existing_keyword = search.objects.filter(keywords=keyword).exists()
+        # if existing_keyword:
+        #     notifications = []
+        #     for user_id in users:
+        #         notification = Notifications(user_id=user_id, message=message)
+        #         notifications.append(notification)
+
+        #     # Bulk create the notifications
+        #     Notifications.objects.bulk_create(notifications)
+
+        #     # return Response("Notifications sent successfully And Keyword  Existing", status=status.HTTP_200_OK)
+
+        # Create notifications for each user
+        notifications = []
+        for user_id in users:
+            notification = Notifications(user_id=user_id, message=message)
+            notifications.append(notification)
+
+        # Bulk create the notifications
+        Notifications.objects.bulk_create(notifications)
+
+        # return Response("Notifications sent successfully", status=status.HTTP_200_OK)
+
         messages.success(request, 'SMS Update Successfully')
         # return render(request, 'success.html')  # Assuming you have a template called 'success.html'
 
@@ -582,9 +613,8 @@ def save_quotes(request):
     return render(request, 'save_quotes.html', context)  # Assuming you have a template called 'save_quotes.html'
 
 
-from django.contrib.auth.decorators import login_required
+
 from django.contrib.auth import authenticate, login
-from django.contrib import messages
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 
@@ -615,3 +645,122 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('Login')
+
+
+# Search Method 
+
+
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+
+class SubCategorySearchView(APIView):
+    authentication_classes = [TokenAuthentication,]
+    permission_classes = [IsAuthenticated,]
+
+    def get(self, request):
+        query = request.GET.get('query')
+
+        if not query:
+            return Response("Please provide a search query", status=status.HTTP_400_BAD_REQUEST)
+
+        # Perform the case-insensitive search query to filter the SMS objects by subcategory name
+        sms_objects = sms.objects.filter(Q(sub_cat_name__sub_cat_name__icontains=query) | Q(sub_cat_name__sub_cat_name__iexact=query))
+
+        # Check if the user has already searched for the same keyword
+        existing_search = search.objects.filter(user=request.user, keywords=query).exists()
+        if not existing_search:
+            # Save the search query and user details into the search model
+            search_obj = search(user=request.user, keywords=query)
+            search_obj.save()
+
+        serializer = SmsSerializer(sms_objects, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+# views.py
+from django.core.mail import send_mail
+from django.contrib.auth.models import User
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
+from .models import Notifications
+from .serializers import NotificationsSerializer
+
+class NotificationsCreateView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = NotificationsSerializer
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        serializer.save(user=user)
+
+class UserNotificationsListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = NotificationsSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        notifications = Notifications.objects.filter(user=user, is_read=False)
+        notifications.update(is_read=True)  # Update is_read to True for the retrieved notifications
+        return Notifications.objects.filter(user=user)
+
+# class NotificationsRetrieveUpdateView(generics.RetrieveUpdateAPIView):
+class NotificationsRetrieveUpdateView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = NotificationsSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Notifications.objects.filter(user=user)
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
+    def perform_update(self, serializer):
+        serializer.save(is_read=True)
+
+
+
+from django.core.mail import send_mail
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from .models import search, Notifications
+from .serializers import NotificationsSerializer
+
+class SendNotificationView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        keyword = request.data.get('keyword')
+        message = request.data.get('message')
+
+        if not keyword or not message:
+            return Response("Please provide a keyword and a message", status=status.HTTP_400_BAD_REQUEST)
+
+        # Find all users who have searched for the given keyword
+        users = search.objects.filter(keywords=keyword).values_list('user', flat=True)
+
+        # Check if the keyword already exists
+        existing_keyword = search.objects.filter(keywords=keyword).exists()
+        if existing_keyword:
+            notifications = []
+            for user_id in users:
+                notification = Notifications(user_id=user_id, message=message)
+                notifications.append(notification)
+
+            # Bulk create the notifications
+            Notifications.objects.bulk_create(notifications)
+
+            return Response("Notifications sent successfully And Keyword  Existing", status=status.HTTP_200_OK)
+
+        # Create notifications for each user
+        notifications = []
+        for user_id in users:
+            notification = Notifications(user_id=user_id, message=message)
+            notifications.append(notification)
+
+        # Bulk create the notifications
+        Notifications.objects.bulk_create(notifications)
+
+        return Response("Notifications sent successfully", status=status.HTTP_200_OK)

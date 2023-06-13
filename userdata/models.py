@@ -79,4 +79,18 @@ class Complaint(models.Model):
 
 
 
+class search(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    keywords = models.CharField(max_length=50)
+    def __str__(self):
+        return self.keywords
+
+
+class Notifications(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.CharField(max_length=70)
+    is_read = models.BooleanField(default=False)
+    def __str__(self):
+        return self.message
+    
 

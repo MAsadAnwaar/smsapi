@@ -2,6 +2,12 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import *
 
+# Notifications 
+class NotificationsSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.username', read_only=True)
+    class Meta:
+        model = Notifications
+        fields = ('user_name', 'message', 'is_read')
 # User Serializer
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,21 +70,6 @@ class LangSerializer(serializers.ModelSerializer):
     class Meta:
         model = lang
         fields = ('id', 'language', 'categories', 'sub_categories')
-
-
-# class SmsSerializer(serializers.ModelSerializer):
-#     # sub_cat_name = SubCategorySerializer(read_only=True)
-#     user_name = serializers.CharField(source='user.username', read_only=True)
-
-#     class Meta:
-#         model = sms
-#         fields = ('id', 'sms', 'user_name', 'status')
-#     # sub_cat_name = SubCategorySerializer(read_only=True)
-#     # user_name = serializers.CharField(source='user.username', read_only=True)
-
-#     # class Meta:
-#     #     model = sms
-#     #     fields = ('id', 'sub_cat_name', 'sms', 'user_name', 'status')
 class SmsSerializer(serializers.ModelSerializer):
     sub_cat_name = serializers.CharField(source='sub_cat_name.sub_cat_name', read_only=True)
     cat_name = serializers.CharField(source='sub_cat_name.cat_name.cat_name', read_only=True)
@@ -100,11 +91,6 @@ class SmsSerializer(serializers.ModelSerializer):
  
 
 # Complant BOX 
-from .models import *
-from rest_framework import serializers
-
-
-from rest_framework import serializers
 from .models import Complaint
 
 class ComplaintSerializer(serializers.ModelSerializer):
@@ -121,9 +107,6 @@ class ComplaintSerializer(serializers.ModelSerializer):
         
         # Check if the user has reached the complaint limit for this SMS
         num_complaints = Complaint.objects.filter(sms=attrs['sms'], user=user).count()
-        # max_complaints = attrs['sms'].max_complaints
-        # if num_complaints >= max_complaints:
-        #     raise serializers.ValidationError('You have reached the complaint limit for this SMS.')
         
         return attrs
 
