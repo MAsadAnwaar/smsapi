@@ -2,12 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import *
 
-# Notifications 
-class NotificationsSerializer(serializers.ModelSerializer):
-    user_name = serializers.CharField(source='user.username', read_only=True)
-    class Meta:
-        model = Notifications
-        fields = ('user_name', 'message', 'is_read')
+
 # User Serializer
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -118,3 +113,9 @@ class ComplaintSerializer(serializers.ModelSerializer):
 
 
 
+# Notifications 
+class NotificationsSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.username', read_only=True)
+    class Meta:
+        model = Notifications
+        fields = ('user_name', 'message', 'is_read')
