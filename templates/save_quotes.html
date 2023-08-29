@@ -1,0 +1,88 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Save Quotes</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="icon" href="{% static 'A111.png' %}" >
+    <link rel="shortcut icon" href="{% static 'A111.png' %}" >
+    <style>
+        .success {
+            background-color: green;
+            color: white;
+        }
+        
+        .error {
+            background-color: red;
+            color: white;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center">Save Quotes</h2>
+        <!-- <div style="text-align: right;">
+        <button class="btn btn-danger" onclick="location.href='{% url 'logout' %}'">Logout</button>
+      </div> -->
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% endif %}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <label for="url">Quotes Web Link Here:</label>
+            <input type="text" name="url" required><br><br>
+
+
+            <label for="website">WebSite:</label>
+            <select name="website" id="website" class="form-control">
+                <option value="hamariweb.com">hamariweb.com</option>
+                <option value="www.brainyquote.com">www.brainyquote.com</option>
+                <option value="www.goodreads.com">www.goodreads.com</option>
+                <option value="www.fluentin3months.com">www.fluentin3months.com</option>
+                <option value="www.goodhousekeeping.com">www.goodhousekeeping.com</option>
+                <option value="www.143greetings.com/">www.143greetings.com/</option>
+                <option value="blog.rescuetime.com">blog.rescuetime.com</option>
+                <!-- <option value="www.fi.edu">www.fi.edu</option> -->
+                <option value="www.berries.com">www.berries.com</option>
+                <option value="www.keepinspiring.me">www.keepinspiring.me</option>
+            </select>
+            <br><br>
+
+            <!-- <label for="language">Select Language:</label>
+            <select name="language" id="language" class="form-control">
+                {% for language in languages %}
+                <option value="{{ language.id }}">{{ language.language }}</option>
+                {% endfor %}
+            </select><br><br> -->
+
+            <label for="category">Select Category:</label>
+            <select name="category" id="category" class="form-control">
+                {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.cat_name }}</option>
+                {% endfor %}
+            </select><br><br>
+
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

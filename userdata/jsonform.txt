@@ -1,0 +1,107 @@
+create_objects/
+
+{
+    "lang": {
+        "language": "Arabic"
+    },
+    "category": [
+        {
+            "language": "Arabic",
+            "cat_name": "input",
+            "cat_image_link": "https://example.com/cat1.png"
+        }
+    ],
+    "sub_category": [
+        {
+            "cat_name": "input",
+            "sub_cat_name": "Subcategory"
+        }
+    ],
+    "sms": [
+        {
+            "sub_cat_name": "Subcategory",
+            "sms": "SMS 1"
+        }
+    ]
+}
+
+
+2nd 
+
+{
+    "lang": {
+        "language": "Language Name"
+    },
+    "category": {
+        "language": "52",
+        "cat_name": "Category Name",
+        "cat_image_link": "https://example.com/cat1.png"
+        
+    },
+    "sub_category": {
+        "cat_name": "Category Name",
+        "sub_cat_name": "Subcategory Name"
+    },
+    "sms": {
+        "sub_cat_name": "Subcategory Name",
+        "sms": "SMS Message"
+    }
+}
+
+
+
+
+for sms create-sms/
+
+
+{
+    "lang": {
+        "language": "English"
+    },
+    "category": {
+        "cat_name": "Quaties"
+    },
+    "sub_category": {
+        "sub_cat_name": "Birthday Wishes"
+    },
+    "sms": {
+        "sms": "This is a sample SMS text"
+    }
+}
+
+for defult English Language  
+{
+    
+    "category": {
+        "cat_name": "Quaties"
+    },
+    "sub_category": {
+        "sub_cat_name": "Birthday Wishes"
+    },
+    "sms": {
+        "sms": "This is a sample SMS text"
+    }
+}
+
+update SMS update_sms/<int:sms_id>/
+
+{
+"id": 1,
+"sub_cat_name": "New Subcategory",
+"sms": "This is an updated SMS text"
+}
+
+
+delete sms delete_sms/<int:sms_id>/
+
+{
+"id": 1
+}
+
+
+For Compaint 
+
+{
+  "sms": 2,
+  "complaint_text": "This message is spam."
+}
