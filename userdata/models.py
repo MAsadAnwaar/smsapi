@@ -31,6 +31,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
 #         return self.language
 
 class category(models.Model):
+    # language = models.ForeignKey(lang, on_delete=models.CASCADE)
     cat_name = models.CharField(max_length=50)
     cat_image_link = models.ImageField(blank=True, upload_to='cat_image')
     cat_added_date = models.DateField(auto_now=True)
@@ -39,12 +40,10 @@ class category(models.Model):
 
 class sub_category(models.Model):
     cat_name = models.ForeignKey(category, on_delete=models.CASCADE)
-    sub_cat_name = models.CharField(max_length=50,blank=True)
-    # sub_cat_title = models.CharField(max_length=70,blank=True)
+    sub_cat_name = models.CharField(max_length=50)
     Sub_cat_image = models.ImageField(default="Sub_cat_image/diamond.png", upload_to='Sub_cat_image')
     def __str__(self):
         return self.sub_cat_name
-
 class Image(models.Model):
     sub_category = models.ForeignKey(sub_category, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='featureimage/')  # Use a base directory
@@ -63,6 +62,7 @@ class sms(models.Model):
     dislikes = models.ManyToManyField(User, related_name='disliked_sms', blank=True)
     def __str__(self):
         return self.sms
+
 class Complaint(models.Model):
     sms = models.ForeignKey(sms, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -93,4 +93,5 @@ class Complaint(models.Model):
     #         super(Complaint, self).save(*args, **kwargs)
 
     
+
 

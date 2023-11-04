@@ -47,14 +47,17 @@ class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = sub_category
         fields = ('id', 'cat_name', 'sub_cat_name','Sub_cat_image')
+
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = '__all__'
+
 class StickerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sticker
         fields = '__all__'
+
 class CategorySerializer(serializers.ModelSerializer):
     sub_categories = SubCategorySerializer(many=True, read_only=True)
     
@@ -83,34 +86,6 @@ class SmsSerializer(serializers.ModelSerializer):
 
    
  
- 
-
-# # Complant BOX 
-# from .models import Complaint
-
-# class ComplaintSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Complaint
-#         fields = ('sms', 'user', 'complaint_text')
-#         read_only_fields = ('user',)  # user should be set in view
-
-#     def validate(self, attrs):
-#         # Check if the user has already made a complaint for this SMS
-#         user = self.context['request'].user
-#         if Complaint.objects.filter(sms=attrs['sms'], user=user).exists():
-#             raise serializers.ValidationError('You have already complained about this SMS.')
-        
-#         # Check if the user has reached the complaint limit for this SMS
-#         num_complaints = Complaint.objects.filter(sms=attrs['sms'], user=user).count()
-        
-#         return attrs
-
-#     def create(self, validated_data):
-#         user = self.context['request'].user
-#         validated_data['user'] = user
-#         complaint = Complaint.objects.create(**validated_data)
-#         return complaint
-
 
 # Complant BOX 
 from .models import Complaint
@@ -137,4 +112,6 @@ class ComplaintSerializer(serializers.ModelSerializer):
         validated_data['user'] = user
         complaint = Complaint.objects.create(**validated_data)
         return complaint
+
+
 

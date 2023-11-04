@@ -1,9 +1,11 @@
 from django.contrib import admin
-from .models import category, sms, sub_category , Complaint, Image , Sticker
+from .models import category, sms, sub_category , Complaint, Image ,Sticker
 from django.utils.html import format_html
 # admin.site.register(category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('cat_name', 'display_image')
+    search_fields = ['cat_name']
+
 
     def display_image(self, obj):
         if obj.cat_image_link:
@@ -16,6 +18,7 @@ class CategoryAdmin(admin.ModelAdmin):
 admin.site.register(category, CategoryAdmin)
 class ImageAdmin(admin.ModelAdmin):
     list_display = ('sub_category', 'image_preview', 'thumbnail_preview')
+    # list_filter = ('sub_category',)
 
     def image_preview(self, obj):
         if obj.image:
@@ -36,7 +39,11 @@ admin.site.register(Image, ImageAdmin)
 # admin.site.register(Complaint)
 
 class SmsAdmin(admin.ModelAdmin):
+    list_filter = ('sub_cat_name',)
+    search_fields = ['sub_cat_name__cat_name']  # Add a search field for the category name
+
     list_display = ('id', 'get_cat_name', 'sub_cat_name','sms' ,'status')
+    
 
     def get_cat_name(self, obj):
         return obj.sub_cat_name.cat_name
@@ -50,6 +57,8 @@ class ComplaintAdmin(admin.ModelAdmin):
     list_display = ('id','sms','user', 'complaint_text')
 admin.site.register(Complaint, ComplaintAdmin)
 class SubCategoryAdmin(admin.ModelAdmin):
+    search_fields = ['sub_cat_name']
+    list_filter = ('sub_cat_name',)
     list_display = ('sub_cat_name','display_image')
 
     def display_image(self, obj):
@@ -65,7 +74,9 @@ admin.site.register(sub_category, SubCategoryAdmin)
 
 
 class StickerAdmin(admin.ModelAdmin):
+    list_filter = ('sub_category',)
     list_display = ('sub_category', 'sticker_preview')
+    
 
     def sticker_preview(self, obj):
         if obj.sticker:

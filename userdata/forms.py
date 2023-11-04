@@ -1,5 +1,5 @@
 from django import forms
-from .models import Image , Sticker
+from .models import Image, Sticker
 
 class ImageUploadForm(forms.ModelForm):
     class Meta:
@@ -9,7 +9,6 @@ class ImageUploadForm(forms.ModelForm):
             'image': forms.ClearableFileInput(attrs={'multiple': True}),
             'thumbnail': forms.ClearableFileInput(attrs={'multiple': True}),
         }
-
 
 class StickerUploadForm(forms.ModelForm):
     class Meta:
